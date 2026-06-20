@@ -1,26 +1,48 @@
 import { Groq } from "groq-sdk";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export async function generateMealRecommendations(remaining: any) {
-  const prompt = `
-    Based on these remaining macros: ${JSON.stringify(remaining)},
-    provide meal recommendations for the next meal.
-    Return the response as a valid JSON object.
-  `;
-
-  const chatCompletion = await groq.chat.completions.create({
+export async function parseMealFromImage(imageUrl: string, caption?: string) {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.2-11b-vision-preview",
     messages: [
       {
         role: "user",
-        content: prompt,
+        content: [
+          { type: "text", text: `Analyze this meal: ${caption || "What is this?"}` },
+          { type: "image_url", image_url: { url: imageUrl } },
+        ],
       },
     ],
-    model: "llama3-70b-8192", 
     response_format: { type: "json_object" },
   });
+  return JSON.parse(response.choices[0].message.content || "{}");
+}
 
-  return JSON.parse(chatCompletion.choices[0].message.content || "{}");
+export async function parseMealFromText(text: string) {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "user",
+        content: `Extract meal details from this text: ${text}`,
+      },
+    ],
+    response_format: { type: "json_object" },
+  });
+  return JSON.parse(response.choices[0].message.content || "{}");
+}
+
+export async function generateMealRecommendations(data: any) {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "user",
+        content: `Provide meal recommendations based on: ${JSON.stringify(data)}`,
+      },
+    ],
+    response_format: { type: "json_object" },
+  });
+  return JSON.parse(response.choices[0].message.content || "{}");
 }
