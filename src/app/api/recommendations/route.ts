@@ -46,9 +46,11 @@ export async function POST(req: NextRequest) {
   let suggestions;
   try {
     suggestions = await generateMealRecommendations(remaining);
-  } catch (err) {
-    console.error("OpenAI recommendation error", err);
-    return NextResponse.json({ error: "Failed to generate recommendations" }, { status: 502 });
+  } catch (err: any) {
+    return NextResponse.json({ 
+      error: "Failed to generate recommendations", 
+      details: err.message || String(err) 
+    }, { status: 502 });
   }
 
   await supabase.from("meal_recommendations").insert({
