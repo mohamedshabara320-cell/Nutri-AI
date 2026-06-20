@@ -41,15 +41,10 @@ export default function Home() {
         {loading ? "Loading..." : "Generate"}
       </button>
 
-      {data?.error && (
-        <div style={{ color: "red", marginTop: 20 }}>
-          {data.error}
-        </div>
-      )}
+      {data?.error && <div>{data.error}</div>}
 
       {remaining && (
-        <div style={{ marginTop: 20 }}>
-          <h2>Remaining</h2>
+        <div>
           <p>Calories: {remaining.remainingCalories}</p>
           <p>Protein: {remaining.remainingProtein}</p>
           <p>Carbs: {remaining.remainingCarbs}</p>
@@ -57,27 +52,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* أهم حماية هنا */}
       {Array.isArray(recommendations) && recommendations.length > 0 ? (
-        <div style={{ marginTop: 20 }}>
-          <h2>Recommendations</h2>
-
-          {recommendations.map((item: any, i: number) => (
-            <div key={i} style={{ marginBottom: 10, padding: 10, border: "1px solid #ddd" }}>
-              <h3>{item.name}</h3>
-              <p>Calories: {item.calories}</p>
-              <p>{item.reason}</p>
-            </div>
-          ))}
-        </div>
+        recommendations.map((item: any, i: number) => (
+          <div key={i}>
+            <h3>{item.name}</h3>
+            <p>{item.calories}</p>
+            <p>{item.reason}</p>
+          </div>
+        ))
       ) : (
         !loading &&
         data &&
-        !data?.error && (
-          <div style={{ marginTop: 20 }}>
-            No recommendations found
-          </div>
-        )
+        !data?.error && <div>No recommendations found</div>
       )}
     </div>
   );
