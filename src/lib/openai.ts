@@ -1,15 +1,11 @@
-import { Groq } from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export async function parseMealFromImage(imageUrl: string, caption?: string) {
   const response = await groq.chat.completions.create({
-    model: "llama-3.2-11b-vision-preview",
+    model: "llama-3.3-70b-versatile",
     messages: [
       {
         role: "user",
         content: [
-          { type: "text", text: `Analyze this meal: ${caption || "What is this?"}` },
+          { type: "text", text: `Analyze this meal: ${caption || "What is this?"}. Please return the result as a JSON object.` },
           { type: "image_url", image_url: { url: imageUrl } },
         ],
       },
@@ -25,7 +21,7 @@ export async function parseMealFromText(text: string) {
     messages: [
       {
         role: "user",
-        content: `Extract meal details from this text: ${text}`,
+        content: `Extract meal details from this text: ${text}. Please return the result as a JSON object.`,
       },
     ],
     response_format: { type: "json_object" },
@@ -39,7 +35,7 @@ export async function generateMealRecommendations(data: any) {
     messages: [
       {
         role: "user",
-        content: `Provide meal recommendations based on: ${JSON.stringify(data)}`,
+        content: `Provide meal recommendations based on: ${JSON.stringify(data)}. Please return the result as a JSON object.`,
       },
     ],
     response_format: { type: "json_object" },
