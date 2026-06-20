@@ -17,7 +17,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mealTime: "lunch",
+          mealTime: "dinner",
         }),
       });
 
@@ -38,8 +38,14 @@ export default function Home() {
       <h1>Nutri App</h1>
 
       <button onClick={generate} disabled={loading}>
-        {loading ? "Loading..." : "Generate Recommendations"}
+        {loading ? "Loading..." : "Generate"}
       </button>
+
+      {data?.error && (
+        <div style={{ color: "red", marginTop: 20 }}>
+          {data.error}
+        </div>
+      )}
 
       {remaining && (
         <div style={{ marginTop: 20 }}>
@@ -51,42 +57,28 @@ export default function Home() {
         </div>
       )}
 
-      {data?.error && (
-        <div style={{ color: "red", marginTop: 20 }}>
-          {data.error}
-        </div>
-      )}
-
-      {Array.isArray(recommendations) && (
+      {/* أهم حماية هنا */}
+      {Array.isArray(recommendations) && recommendations.length > 0 ? (
         <div style={{ marginTop: 20 }}>
           <h2>Recommendations</h2>
 
           {recommendations.map((item: any, i: number) => (
-            <div
-              key={i}
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                marginBottom: 10,
-                borderRadius: 8,
-              }}
-            >
+            <div key={i} style={{ marginBottom: 10, padding: 10, border: "1px solid #ddd" }}>
               <h3>{item.name}</h3>
               <p>Calories: {item.calories}</p>
               <p>{item.reason}</p>
             </div>
           ))}
         </div>
-      )}
-
-      {!loading &&
+      ) : (
+        !loading &&
         data &&
-        !data?.error &&
-        !Array.isArray(recommendations) && (
+        !data?.error && (
           <div style={{ marginTop: 20 }}>
             No recommendations found
           </div>
-        )}
+        )
+      )}
     </div>
   );
 }
