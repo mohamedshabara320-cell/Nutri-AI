@@ -14,8 +14,11 @@ import CalorieChart from "@/components/Dashboard/CalorieChart";
 import StreakCard from "@/components/Dashboard/StreakCard";
 
 import { Droplet, Sparkles, MessageCircle } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 export default function DashboardPage() {
+  const { lang } = useLang();
+
   const { profile, loading: profileLoading } = useProfile();
   const { meals, totals, loading: mealsLoading, refresh } =
     useDailyLog();
@@ -32,9 +35,9 @@ export default function DashboardPage() {
 
   if (!profile) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center text-center px-4">
         <Link href="/onboarding" className="btn-primary">
-          Complete Profile
+          {lang === "ar" ? "إكمال الإعداد" : "Complete Profile"}
         </Link>
       </div>
     );
@@ -47,19 +50,26 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-gray-400">
-            {new Date().toLocaleDateString(undefined, {
-              weekday: "long",
-              month: "short",
-              day: "numeric",
-            })}
+            {new Date().toLocaleDateString(
+              lang === "ar" ? "ar-EG" : "en-US",
+              {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              }
+            )}
           </p>
 
           <h1 className="text-2xl font-bold">
-            Hi {profile.full_name || "User"} 👋
+            {lang === "ar"
+              ? `مرحبًا ${profile.full_name || "بك"} 👋`
+              : `Hi ${profile.full_name || "User"} 👋`}
           </h1>
 
           <p className="text-sm text-gray-400">
-            Your AI nutrition system is active
+            {lang === "ar"
+              ? "نظامك الغذائي الذكي يعمل الآن"
+              : "Your AI nutrition system is active"}
           </p>
         </div>
 
@@ -69,7 +79,7 @@ export default function DashboardPage() {
       {/* AI INSIGHT */}
       <AIInsightCard />
 
-      {/* WEEKLY AI INSIGHT */}
+      {/* WEEKLY */}
       <AIWeeklyInsight caloriesTrend="stable" />
 
       {/* STREAK */}
@@ -77,7 +87,10 @@ export default function DashboardPage() {
 
       {/* CALORIES */}
       <div className="card">
-        <p className="text-sm text-gray-400">Calories</p>
+        <p className="text-sm text-gray-400">
+          {lang === "ar" ? "السعرات" : "Calories"}
+        </p>
+
         <p className="text-xl font-bold">
           {Math.round(totals.calories)} / {profile.calorie_target}
         </p>
@@ -88,17 +101,17 @@ export default function DashboardPage() {
         <ProgressRing
           value={totals.protein}
           max={profile.protein_target_g}
-          label="Protein"
+          label={lang === "ar" ? "بروتين" : "Protein"}
         />
         <ProgressRing
           value={totals.carbs}
           max={profile.carb_target_g}
-          label="Carbs"
+          label={lang === "ar" ? "كارب" : "Carbs"}
         />
         <ProgressRing
           value={totals.fat}
           max={profile.fat_target_g}
-          label="Fat"
+          label={lang === "ar" ? "دهون" : "Fat"}
         />
       </div>
 
@@ -118,10 +131,14 @@ export default function DashboardPage() {
       {/* WATER */}
       <div className="card flex items-center gap-3">
         <Droplet className="text-blue-500" />
+
         <div>
-          <p className="text-sm text-gray-400">Water intake</p>
+          <p className="text-sm text-gray-400">
+            {lang === "ar" ? "المياه اليومية" : "Water intake"}
+          </p>
+
           <p className="font-semibold">
-            {((profile.water_target_ml ?? 0) / 1000).toFixed(1)} L / day
+            {((profile.water_target_ml ?? 0) / 1000).toFixed(1)} L
           </p>
         </div>
       </div>
@@ -133,33 +150,52 @@ export default function DashboardPage() {
 
         <Link href="/chat" className="card text-center">
           <MessageCircle className="mx-auto mb-1" />
-          <p className="text-sm font-semibold">AI Coach</p>
-          <p className="text-xs text-gray-400">Chat with AI</p>
+
+          <p className="text-sm font-semibold">
+            {lang === "ar" ? "المساعد الذكي" : "AI Coach"}
+          </p>
+
+          <p className="text-xs text-gray-400">
+            {lang === "ar" ? "تحدث مع AI" : "Chat with AI"}
+          </p>
         </Link>
 
         <Link href="/recommendations" className="card text-center">
           <Sparkles className="mx-auto mb-1" />
-          <p className="text-sm font-semibold">Meal Plan</p>
-          <p className="text-xs text-gray-400">AI suggestions</p>
+
+          <p className="text-sm font-semibold">
+            {lang === "ar" ? "خطة وجبات" : "Meal Plan"}
+          </p>
+
+          <p className="text-xs text-gray-400">
+            {lang === "ar" ? "اقتراحات ذكية" : "AI suggestions"}
+          </p>
         </Link>
 
       </div>
 
-      {/* TODAY MEALS */}
+      {/* MEALS */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-semibold">Today’s meals</h2>
+          <h2 className="font-semibold">
+            {lang === "ar" ? "وجبات اليوم" : "Today’s meals"}
+          </h2>
 
           <Link href="/meals" className="text-sm text-green-500">
-            View all
+            {lang === "ar" ? "عرض الكل" : "View all"}
           </Link>
         </div>
 
         {meals.length === 0 ? (
           <div className="card text-center">
-            <p className="font-semibold">No meals yet</p>
+            <p className="font-semibold">
+              {lang === "ar" ? "لا يوجد وجبات" : "No meals yet"}
+            </p>
+
             <p className="text-sm text-gray-400">
-              Start tracking to unlock AI insights
+              {lang === "ar"
+                ? "ابدأ تتبع أكلك"
+                : "Start tracking your meals"}
             </p>
           </div>
         ) : (
@@ -167,6 +203,7 @@ export default function DashboardPage() {
             {meals.slice(0, 3).map((m) => (
               <div key={m.id} className="card">
                 <p className="font-medium">{m.meal_name}</p>
+
                 <p className="text-xs text-gray-400">
                   {Math.round(m.calories)} kcal · P
                   {Math.round(m.protein_g)} C
