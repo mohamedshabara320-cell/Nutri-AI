@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         <ThemeProvider>
           <div className="mx-auto max-w-2xl pb-24">{children}</div>
-          <BottomNav />
+         {/* <BottomNav /> */}
         </ThemeProvider>
       </body>
     </html>
