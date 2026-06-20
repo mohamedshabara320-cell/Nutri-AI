@@ -1,17 +1,61 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { useState } from "react";
 
-export default async function RootPage() {
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
+export default function Home() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  if (!auth.user) redirect("/login");
+  async function generate() {
+    try {
+      setLoading(true);
+      setData(null);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", auth.user.id)
-    .maybeSingle();
+      const res = await fetch("/api/recommendations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          age: 20,
+          goal: "weight loss",
+        }),
+      });
 
-  redirect(profile ? "/dashboard" : "/onboarding");
+      const result = await res.json();
+      setData(result);
+    } catch (err) {
+      setData({ error: "Request failed" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const recommendations = data?.recommendations;
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Nutri App</h1>
+
+      <button onClick={generate} disabled={loading}>
+        {loading ? "Loading..." : "Generate Recommendations"}
+      </button>
+
+      {data?.error && <div>{data.error}</div>}
+
+      {Array.isArray(recommendations) &&
+        recommendations.map((item: any, i: number) => (
+          <div key={i}>
+            <h3>{item.name}</h3>
+            <p>{item.calories}</p>
+            <p>{item.reason}</p>
+          </div>
+        ))}
+
+      {!loading &&
+        data &&
+        !data?.error &&
+        !Array.isArray(recommendations) && (
+          <div>No recommendations found</div>
+        )}
+    </div>
+  );
 }
