@@ -37,3 +37,66 @@ html, body {
 ::-webkit-scrollbar-thumb {
   @apply bg-gray-300 dark:bg-gray-700 rounded-full;
 }
+
+.card {
+  @apply rounded-2xl border border-gray-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-900/60;
+}
+
+.btn-primary {
+  @apply rounded-xl bg-green-600 px-4 py-2 text-white hover:bg-green-700 transition;
+}
+
+:root {
+  --bg: #0a0a0a;
+  --card: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+.dark {
+  --bg: #0a0a0a;
+}
+
+body {
+  background: var(--bg);
+}
+
+/* SaaS Cards */
+.card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-primary {
+  background: #22c55e;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: 0.2s;
+}
+
+.btn-primary:hover {
+  background: #16a34a;
+}
+
+.btn-secondary {
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+.card {
+  transition: all 0.2s ease;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
