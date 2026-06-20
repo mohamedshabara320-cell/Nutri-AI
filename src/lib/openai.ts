@@ -4,6 +4,9 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+/**
+ * Parse meal from image
+ */
 export async function parseMealFromImage(
   imageUrl: string,
   caption?: string
@@ -14,18 +17,17 @@ export async function parseMealFromImage(
       {
         role: "system",
         content:
-          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
+          "You are a JSON generator. Always return ONLY valid JSON. No explanations. No markdown. Only JSON.",
       },
       {
         role: "user",
         content: [
           {
             type: "text",
-            text: `Analyze this meal: ${
-              caption || "What is this meal?"
-            }
+            text: `Analyze this meal. ${
+              caption || "No caption provided"
+            }. Return ONLY JSON in this format:
 
-Return a JSON object with:
 {
   "mealName": "",
   "ingredients": [],
@@ -33,7 +35,9 @@ Return a JSON object with:
   "protein": 0,
   "carbs": 0,
   "fat": 0
-}`,
+}
+
+IMPORTANT: return JSON only.`,
           },
           {
             type: "image_url",
@@ -50,11 +54,14 @@ Return a JSON object with:
 
   try {
     return JSON.parse(content);
-  } catch {
+  } catch (err) {
     return { raw: content };
   }
 }
 
+/**
+ * Parse meal from text
+ */
 export async function parseMealFromText(text: string) {
   const response = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -62,15 +69,16 @@ export async function parseMealFromText(text: string) {
       {
         role: "system",
         content:
-          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
+          "You are a JSON generator. Always return ONLY valid JSON. No explanations. Only JSON output.",
       },
       {
         role: "user",
-        content: `Extract nutrition data from:
+        content: `Extract meal data from this text:
 
 "${text}"
 
-Return:
+Return ONLY JSON in this format:
+
 {
   "mealName": "",
   "ingredients": [],
@@ -78,7 +86,9 @@ Return:
   "protein": 0,
   "carbs": 0,
   "fat": 0
-}`,
+}
+
+IMPORTANT: JSON only.`,
       },
     ],
   });
@@ -87,11 +97,14 @@ Return:
 
   try {
     return JSON.parse(content);
-  } catch {
+  } catch (err) {
     return { raw: content };
   }
 }
 
+/**
+ * Generate meal recommendations
+ */
 export async function generateMealRecommendations(data: any) {
   const response = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -99,15 +112,16 @@ export async function generateMealRecommendations(data: any) {
       {
         role: "system",
         content:
-          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
+          "You are a JSON generator. Always return ONLY valid JSON. No explanations. No markdown.",
       },
       {
         role: "user",
-        content: `Based on this user data:
+        content: `Generate meal recommendations based on this data:
 
 ${JSON.stringify(data)}
 
-Return:
+Return ONLY JSON in this format:
+
 {
   "recommendations": [
     {
@@ -116,7 +130,9 @@ Return:
       "reason": ""
     }
   ]
-}`,
+}
+
+IMPORTANT: JSON only.`,
       },
     ],
   });
@@ -125,7 +141,7 @@ Return:
 
   try {
     return JSON.parse(content);
-  } catch {
+  } catch (err) {
     return { raw: content };
   }
 }
