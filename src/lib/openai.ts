@@ -5,6 +5,22 @@ const groq = new Groq({
 });
 
 /**
+ * Helper safe JSON parser
+ */
+function safeParse(content: string) {
+  if (!content) return { error: "Empty response" };
+
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    return {
+      error: "Invalid JSON",
+      raw: content,
+    };
+  }
+}
+
+/**
  * Parse meal from image
  */
 export async function parseMealFromImage(
@@ -17,17 +33,18 @@ export async function parseMealFromImage(
       {
         role: "system",
         content:
-          "You are a JSON generator. Always return ONLY valid JSON. No explanations. No markdown. Only JSON.",
+          "Return ONLY valid JSON. No markdown. No explanation. JSON only.",
       },
       {
         role: "user",
         content: [
           {
             type: "text",
-            text: `Analyze this meal. ${
-              caption || "No caption provided"
-            }. Return ONLY JSON in this format:
+            text: `Analyze this meal.
 
+Caption: ${caption || "No caption"}
+
+Return ONLY valid JSON in this format:
 {
   "mealName": "",
   "ingredients": [],
@@ -37,7 +54,7 @@ export async function parseMealFromImage(
   "fat": 0
 }
 
-IMPORTANT: return JSON only.`,
+IMPORTANT: JSON only.`,
           },
           {
             type: "image_url",
@@ -50,13 +67,8 @@ IMPORTANT: return JSON only.`,
     ],
   });
 
-  const content = response.choices[0]?.message?.content || "{}";
-
-  try {
-    return JSON.parse(content);
-  } catch (err) {
-    return { raw: content };
-  }
+  const content = response.choices[0]?.message?.content || "";
+  return safeParse(content);
 }
 
 /**
@@ -69,16 +81,16 @@ export async function parseMealFromText(text: string) {
       {
         role: "system",
         content:
-          "You are a JSON generator. Always return ONLY valid JSON. No explanations. Only JSON output.",
+          "Return ONLY valid JSON. No markdown. No explanation. JSON only.",
       },
       {
         role: "user",
-        content: `Extract meal data from this text:
+        content: `Extract meal info from text.
 
-"${text}"
+Text:
+${text}
 
-Return ONLY JSON in this format:
-
+Return ONLY JSON:
 {
   "mealName": "",
   "ingredients": [],
@@ -93,17 +105,12 @@ IMPORTANT: JSON only.`,
     ],
   });
 
-  const content = response.choices[0]?.message?.content || "{}";
-
-  try {
-    return JSON.parse(content);
-  } catch (err) {
-    return { raw: content };
-  }
+  const content = response.choices[0]?.message?.content || "";
+  return safeParse(content);
 }
 
 /**
- * Generate meal recommendations
+ * Generate recommendations
  */
 export async function generateMealRecommendations(data: any) {
   const response = await groq.chat.completions.create({
@@ -112,7 +119,7 @@ export async function generateMealRecommendations(data: any) {
       {
         role: "system",
         content:
-          "You are a JSON generator. Always return ONLY valid JSON. No explanations. No markdown.",
+          "Return ONLY valid JSON. No markdown. No explanation. JSON only.",
       },
       {
         role: "user",
@@ -120,8 +127,7 @@ export async function generateMealRecommendations(data: any) {
 
 ${JSON.stringify(data)}
 
-Return ONLY JSON in this format:
-
+Return ONLY JSON:
 {
   "recommendations": [
     {
@@ -137,11 +143,6 @@ IMPORTANT: JSON only.`,
     ],
   });
 
-  const content = response.choices[0]?.message?.content || "{}";
-
-  try {
-    return JSON.parse(content);
-  } catch (err) {
-    return { raw: content };
-  }
+  const content = response.choices[0]?.message?.content || "";
+  return safeParse(content);
 }
