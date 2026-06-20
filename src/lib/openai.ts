@@ -1,26 +1,58 @@
 import { Groq } from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
-export async function parseMealFromImage(imageUrl: string, caption?: string) {
+export async function parseMealFromImage(
+  imageUrl: string,
+  caption?: string
+) {
   const response = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       {
         role: "system",
-        content: "You are a JSON generator. You must return ONLY a valid JSON object. Do not include any extra text, markdown, or explanations. Just the JSON."
+        content:
+          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
       },
       {
         role: "user",
         content: [
-          { type: "text", text: `Analyze this meal: ${caption || "What is this?"}. Return the response as JSON.` },
-          { type: "image_url", image_url: { url: imageUrl } },
+          {
+            type: "text",
+            text: `Analyze this meal: ${
+              caption || "What is this meal?"
+            }
+
+Return a JSON object with:
+{
+  "mealName": "",
+  "ingredients": [],
+  "estimatedCalories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0
+}`,
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: imageUrl,
+            },
+          },
         ],
       },
     ],
-    response_format: { type: "json_object" },
   });
-  return JSON.parse(response.choices[0].message.content || "{}");
+
+  const content = response.choices[0]?.message?.content || "{}";
+
+  try {
+    return JSON.parse(content);
+  } catch {
+    return { raw: content };
+  }
 }
 
 export async function parseMealFromText(text: string) {
@@ -29,16 +61,35 @@ export async function parseMealFromText(text: string) {
     messages: [
       {
         role: "system",
-        content: "You are a JSON generator. You must return ONLY a valid JSON object. Do not include any extra text, markdown, or explanations. Just the JSON."
+        content:
+          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
       },
       {
         role: "user",
-        content: `Extract meal details from: ${text}. Return the response as JSON.`,
+        content: `Extract nutrition data from:
+
+"${text}"
+
+Return:
+{
+  "mealName": "",
+  "ingredients": [],
+  "estimatedCalories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0
+}`,
       },
     ],
-    response_format: { type: "json_object" },
   });
-  return JSON.parse(response.choices[0].message.content || "{}");
+
+  const content = response.choices[0]?.message?.content || "{}";
+
+  try {
+    return JSON.parse(content);
+  } catch {
+    return { raw: content };
+  }
 }
 
 export async function generateMealRecommendations(data: any) {
@@ -47,73 +98,34 @@ export async function generateMealRecommendations(data: any) {
     messages: [
       {
         role: "system",
-        content: "You are a JSON generator. You must return ONLY a valid JSON object. Do not include any extra text, markdown, or explanations. Just the JSON."
+        content:
+          "Return ONLY valid JSON. No markdown. No explanations. Output must be a JSON object.",
       },
       {
         role: "user",
-        content: `Recommend meals based on: ${JSON.stringify(data)}. Return the response as JSON.`,
+        content: `Based on this user data:
+
+${JSON.stringify(data)}
+
+Return:
+{
+  "recommendations": [
+    {
+      "name": "",
+      "calories": 0,
+      "reason": ""
+    }
+  ]
+}`,
       },
     ],
-    response_format: { type: "json_object" },
   });
-  return JSON.parse(response.choices[0].message.content || "{}");
-}import { Groq } from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const content = response.choices[0]?.message?.content || "{}";
 
-export async function parseMealFromImage(imageUrl: string, caption?: string) {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content: "You are a helpful assistant that outputs only valid JSON."
-      },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: `Analyze this meal: ${caption || "What is this?"}. Return the response as a JSON object.` },
-          { type: "image_url", image_url: { url: imageUrl } },
-        ],
-      },
-    ],
-    response_format: { type: "json_object" },
-  });
-  return JSON.parse(response.choices[0].message.content || "{}");
-}
-
-export async function parseMealFromText(text: string) {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content: "You are a helpful assistant that outputs only valid JSON."
-      },
-      {
-        role: "user",
-        content: `Extract meal details from this text: ${text}. Return the response as a JSON object.`,
-      },
-    ],
-    response_format: { type: "json_object" },
-  });
-  return JSON.parse(response.choices[0].message.content || "{}");
-}
-
-export async function generateMealRecommendations(data: any) {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content: "You are a helpful assistant that outputs only valid JSON."
-      },
-      {
-        role: "user",
-        content: `Provide meal recommendations based on: ${JSON.stringify(data)}. Return the response as a JSON object.`,
-      },
-    ],
-    response_format: { type: "json_object" },
-  });
-  return JSON.parse(response.choices[0].message.content || "{}");
+  try {
+    return JSON.parse(content);
+  } catch {
+    return { raw: content };
+  }
 }
