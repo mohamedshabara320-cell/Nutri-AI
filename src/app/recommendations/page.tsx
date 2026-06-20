@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
-import { MealSuggestion } from "@/lib/openai";
 
 const MEAL_TIMES = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -10,25 +9,38 @@ export default function RecommendationsPage() {
   const [mealTime, setMealTime] = useState("dinner");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<MealSuggestion[]>([]);
-  const [remaining, setRemaining] = useState<Record<string, number> | null>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [remaining, setRemaining] = useState<any>(null);
 
   async function generate() {
-    setLoading(true);
-    setError(null);
-    const res = await fetch("/api/recommendations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mealTime }),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      setError(json.error ?? "Failed to generate recommendations");
-    } else {
-      setSuggestions(json.suggestions ?? []);
-      setRemaining(json.remaining ?? null);
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch("/api/recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mealTime }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setError(json.error ?? "Failed to generate recommendations");
+        setSuggestions([]);
+        setRemaining(null);
+        return;
+      }
+
+      setSuggestions(json?.suggestions?.recommendations ?? []);
+      setRemaining(json?.remaining ?? null);
+    } catch (err) {
+      setError("Network error");
+      setSuggestions([]);
+      setRemaining(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -36,7 +48,10 @@ export default function RecommendationsPage() {
       <h1 className="text-xl font-bold">AI meal suggestions</h1>
 
       <div className="card space-y-3">
-        <label className="block text-sm font-medium">What meal are you planning?</label>
+        <label className="block text-sm font-medium">
+          What meal are you planning?
+        </label>
+
         <div className="flex gap-2">
           {MEAL_TIMES.map((t) => (
             <button
@@ -52,7 +67,12 @@ export default function RecommendationsPage() {
             </button>
           ))}
         </div>
-        <button onClick={generate} disabled={loading} className="btn-primary w-full gap-2">
+
+        <button
+          onClick={generate}
+          disabled={loading}
+          className="btn-primary w-full gap-2"
+        >
           <Sparkles size={16} />
           {loading ? "Thinking…" : "Get suggestions"}
         </button>
@@ -62,21 +82,28 @@ export default function RecommendationsPage() {
 
       {remaining && (
         <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          Remaining today: {remaining.remainingCalories} kcal · P{remaining.remainingProtein} C
-          {remaining.remainingCarbs} F{remaining.remainingFat}
+          Remaining today: {remaining.remainingCalories} kcal · P
+          {remaining.remainingProtein} C{remaining.remainingCarbs} F
+          {remaining.remainingFat}
         </p>
       )}
 
       <div className="space-y-3">
-        {suggestions.map((s, i) => (
-          <div key={i} className="card">
-            <p className="font-semibold">{s.name}</p>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{s.description}</p>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              {s.calories} kcal · P{s.protein} C{s.carbs} F{s.fat}
-            </p>
-          </div>
-        ))}
+        {Array.isArray(suggestions) && suggestions.length > 0 ? (
+          suggestions.map((s, i) => (
+            <div key={i} className="card">
+              <p className="font-semibold">{s.name}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                {s.calories} kcal · P{s.protein} C{s.carbs} F{s.fat}
+              </p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                {s.reason}
+              </p>
+            </div>
+          ))
+        ) : (
+          !loading && <p className="text-sm text-gray-500">No suggestions yet</p>
+        )}
       </div>
     </div>
   );
