@@ -5,7 +5,8 @@ import BottomNav from "@/components/Layout/BottomNav";
 
 export const metadata: Metadata = {
   title: "Nutri AI — Smart Nutrition Tracker",
-  description: "AI-powered nutrition tracking, lean bulk calculator, and macro coaching.",
+  description:
+    "AI-powered nutrition tracking, lean bulk calculator, and macro coaching.",
 };
 
 export const viewport: Viewport = {
@@ -15,7 +16,11 @@ export const viewport: Viewport = {
   themeColor: "#16a34a",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen antialiased">
